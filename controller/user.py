@@ -37,5 +37,11 @@ def login_user(login_form: LoginForm):
         raise HTTPException(
             status_code=RECORD_NOT_FOUND,
             detail=ErrorMessage.user_not_found)
+    if login_form.password != db_user.password:
+        raise HTTPException(
+            status_code=RECORD_NOT_FOUND,
+            detail=ErrorMessage.password_mismatch
+        )
     access_token = create_access_token(login_form.dict())
     return {'user': db_user, 'access_token': access_token}
+
