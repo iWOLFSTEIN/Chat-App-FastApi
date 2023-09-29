@@ -2,7 +2,8 @@ from datetime import datetime, timedelta
 from fastapi import HTTPException
 from models.login_form import LoginForm
 from models.user import User
-from secret import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_DAYS
+from secret import SECRET_KEY 
+from config import ALGORITHM, ACCESS_TOKEN_EXPIRE_DAYS
 from jose import jwt
 from utils.error_message import ErrorMessage
 from utils.status_codes import ALREADY_EXIST, RECORD_NOT_FOUND
