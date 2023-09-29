@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from controller.user import create_user, login_user
 from models.login_form import LoginForm
 from models.user import User
 
@@ -6,8 +7,8 @@ router = APIRouter()
 
 @router.get("/login") 
 async def login(login_form: LoginForm): 
-    return {"user": login_form, "message": "Login successful!"}
+    return login_user(login_form=login_form)
 
 @router.post("/signup")
 async def signup(user: User):
-    return {"user": user, 'message': "Signup successful!"}
+    return create_user(user=user)
