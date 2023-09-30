@@ -4,6 +4,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from config import ALGORITHM
 from secret import SECRET_KEY
+from utils.error_message import ErrorMessage
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -13,7 +14,7 @@ def check_token_validity(func):
     def decorator(**kwargs):
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
+            detail=ErrorMessage.invalid_token,
             headers={"WWW-Authenticate": "Bearer"},
         )
         try:
