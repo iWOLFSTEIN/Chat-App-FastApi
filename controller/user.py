@@ -9,7 +9,6 @@ from utils.error_message import ErrorMessage
 from utils.status_codes import ALREADY_EXIST, RECORD_NOT_FOUND
 from controller.mongo_db import MongoCollections, MongoStore
 
-dummy_user_db: dict = {}
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()

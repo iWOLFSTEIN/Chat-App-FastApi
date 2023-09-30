@@ -13,7 +13,7 @@ class MongoStore:
             return self.__class__.db_instance
         db_connection = self.db_connect() 
         db = db_connection[DATABASE_NAME]
-        self.__class__.db_instance = db
+        self.__class__.db_instance = db     
         return db
 
 
