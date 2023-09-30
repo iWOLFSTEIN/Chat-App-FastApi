@@ -3,8 +3,7 @@ from config import DATABASE_NAME, MONGO_DB_URL
 
 class MongoStore:
     db_instance = None
-
-    def db_connect(self):
+    def db_connect(self) -> MongoClient:
         client = MongoClient(MONGO_DB_URL)
         return client
 
@@ -15,7 +14,7 @@ class MongoStore:
         db = db_connection[DATABASE_NAME]
         self.__class__.db_instance = db     
         return db
-
+    
 
 class MongoCollections: 
     users: str = "users"

@@ -1,12 +1,11 @@
 from datetime import datetime, timedelta
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from models.login_form import LoginForm
 from models.user import User
 from secret import SECRET_KEY 
 from config import ALGORITHM, ACCESS_TOKEN_EXPIRE_DAYS
 from jose import jwt
 from utils.error_message import ErrorMessage
-from utils.status_codes import ALREADY_EXIST, RECORD_NOT_FOUND
 from controller.mongo_db import MongoCollections, MongoStore
 
 
@@ -16,6 +15,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
+        # expire = datetime.utcnow() + timedelta(seconds=5)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
@@ -36,7 +36,7 @@ def create_user(user: User):
     db_user = get_user(username=user.username)
     if db_user:
         raise HTTPException(
-            status_code=ALREADY_EXIST,
+            status_code=status.HTTP_403_FORBIDDEN,
             detail=ErrorMessage.user_already_exist)
     db[MongoCollections.users].insert_one(user.dict())
     access_token = create_access_token(
@@ -48,11 +48,11 @@ def login_user(login_form: LoginForm):
     db_user = get_user(username=login_form.username)
     if not db_user:
         raise HTTPException(
-            status_code=RECORD_NOT_FOUND,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail=ErrorMessage.user_not_found)
     if login_form.password != db_user.password:
         raise HTTPException(
-            status_code=RECORD_NOT_FOUND,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail=ErrorMessage.password_mismatch
         )
     access_token = create_access_token(login_form.dict())

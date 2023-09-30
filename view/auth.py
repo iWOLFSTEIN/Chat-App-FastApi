@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from controller.user import create_user, login_user
+from controller.auth import create_user, login_user
 from models.login_form import LoginForm
 from models.user import User
 
