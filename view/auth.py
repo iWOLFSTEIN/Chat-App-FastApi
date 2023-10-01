@@ -5,7 +5,7 @@ from models.user import User
 
 router = APIRouter()
 
-@router.get("/login") 
+@router.post("/login") 
 async def login(login_form: LoginForm): 
     return login_user(login_form=login_form)
 

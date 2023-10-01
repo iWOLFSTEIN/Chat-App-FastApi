@@ -24,5 +24,6 @@ def check_token_validity(func):
                 raise credentials_exception
         except JWTError:
             raise credentials_exception
+        kwargs.pop('token')
         return func(**kwargs)
     return decorator
