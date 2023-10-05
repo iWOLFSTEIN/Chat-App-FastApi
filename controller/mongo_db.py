@@ -18,3 +18,6 @@ class MongoStore:
 
 class MongoCollections: 
     users: str = "users"
+    chats: str = "chats"
+    rooms: str = "rooms"
+

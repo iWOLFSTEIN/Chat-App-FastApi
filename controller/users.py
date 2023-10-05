@@ -8,3 +8,11 @@ def get_users(max_limit: int):
     result = db[MongoCollections.users].find().limit(max_limit)
     users = [User(**user) for user in result]
     return users
+
+@check_token_validity
+def get_single_user(id: str) -> User | None:
+    db = MongoStore().mongo_db()
+    user = db[MongoCollections.users].find_one({'_id': id})
+    if user:
+        return User(**user)
+    return None
