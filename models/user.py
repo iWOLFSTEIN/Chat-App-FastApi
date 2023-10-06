@@ -9,7 +9,7 @@ class User(BaseModel):
     name: str | None = None
     username: str 
     email: str
-    password: str
+    password: str 
 
     @validator('id', pre=True, always=True)
     def validate_id(cls, value):
@@ -20,3 +20,4 @@ class User(BaseModel):
         if not value:
             return None
         return str(value)
+

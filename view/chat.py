@@ -1,7 +1,7 @@
 from mailbox import Message
 from typing import Annotated
 from fastapi import APIRouter, Depends
-from controller.token_validity import oauth2_scheme
+from controller.validate import oauth2_scheme
 
 router = APIRouter()
 

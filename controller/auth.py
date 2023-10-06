@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from fastapi import HTTPException, status
-from controller.users import get_single_user
+from controller.users import get_user_by_id, get_user_by_query
+from controller.validate import validate_user_for_signup
 from models.login_form import LoginForm
 from models.user import User
 from secret import SECRET_KEY 
@@ -16,37 +17,28 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
-        # expire = datetime.utcnow() + timedelta(seconds=5)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 
-def get_user(username: str) -> User | None:
-    db = MongoStore().mongo_db()
-    query = {'username': username}
-    user = db[MongoCollections.users].find_one(query)
-    if user:
-        return User(**user)
-    return None 
-
-
+@validate_user_for_signup
 def create_user(user: User):
-    db = MongoStore().mongo_db()
-    db_user = get_user(username=user.username)
-    if db_user:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=ErrorMessage.user_already_exist)
-    result = db[MongoCollections.users].insert_one(user.dict())
+    db = MongoStore.mongo_db()
+    new_user = user.dict(exclude={'id'})
+    result = db[MongoCollections.users].insert_one(new_user)
     access_token = create_access_token(
         {'username': user.username, 'password': user.password})
-    user = get_single_user(token=access_token, id=result.inserted_id)
+    
+    user_id = result.inserted_id.__str__()
+    user = get_user_by_id(token=access_token, id=user_id)
+    
     return {"user": user, "access_token": access_token}
 
 
 def login_user(login_form: LoginForm):
-    user = get_user(username=login_form.username)
+    user = get_user_by_query(
+        query=login_form.dict(exclude={'password'}, exclude_none=True, by_alias=True))
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
