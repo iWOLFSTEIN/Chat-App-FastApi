@@ -14,12 +14,12 @@ def get_users(max_limit: int):
 def get_user_by_id(id: str) -> User | None:
     db = MongoStore.mongo_db()
     user = db[MongoCollections.users].find_one({'_id': ObjectId(id)})
+    print(user)
     if user:
         return User(**user).dict(exclude={'password'})
     return None
 
 def get_user_by_query(query: dict) -> User | None:
-    print(query)
     db = MongoStore.mongo_db()
     user = db[MongoCollections.users].find_one(query)
     if user:

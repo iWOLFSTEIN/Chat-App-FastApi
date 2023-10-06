@@ -1,11 +1,12 @@
 from typing import Annotated
 from bson import ObjectId
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, validator, Field
 
 from utils.error_message import ErrorMessage
 
 class User(BaseModel):
     id: Annotated[str | None, Field(alias='_id')] = None
+    avatar: str | None = None
     name: str | None = None
     username: str 
     email: str
