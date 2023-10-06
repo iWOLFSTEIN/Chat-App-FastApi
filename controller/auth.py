@@ -1,13 +1,11 @@
 from datetime import datetime, timedelta
-from fastapi import HTTPException, status
-from controller.users import get_user_by_id, get_user_by_query
-from controller.validate import validate_user_for_signup
+from controller.users import get_user_by_id
+from controller.validate import validate_user_for_signup, validate_user_for_login
 from models.login_form import LoginForm
 from models.user import User
 from secret import SECRET_KEY 
 from config import ALGORITHM, ACCESS_TOKEN_EXPIRE_DAYS
 from jose import jwt
-from utils.error_message import ErrorMessage
 from controller.mongo_db import MongoCollections, MongoStore
 
 
@@ -36,18 +34,8 @@ def create_user(user: User):
     return {"user": user, "access_token": access_token}
 
 
-def login_user(login_form: LoginForm):
-    user = get_user_by_query(
-        query=login_form.dict(exclude={'password'}, exclude_none=True, by_alias=True))
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=ErrorMessage.user_not_found)
-    if login_form.password != user.password:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=ErrorMessage.password_mismatch
-        )
+@validate_user_for_login
+def login_user(login_form: LoginForm, user: User):   
     access_token = create_access_token(
         {'username': user.username, 'password': user.password})
     return {'user': user, 'access_token': access_token}
