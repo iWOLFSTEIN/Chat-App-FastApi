@@ -15,7 +15,10 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 def validate_token(**kwargs) -> bool:
     try:
-        payload = jwt.decode(kwargs["token"], SECRET_KEY, algorithms=[ALGORITHM])
+        token = kwargs.get('token')
+        if not token:
+            return False
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("username")
         if username is None:
             return False

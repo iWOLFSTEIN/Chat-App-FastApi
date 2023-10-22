@@ -1,11 +1,8 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends
-import pymongo
-from controller.mongo_db import MongoCollections, MongoStore
 from controller.validate import oauth2_scheme, validate_token
-from models.chat import Chat
 from models.message import Message
-from controller import chat as chat_controller
+from controller import chat as chat_controller, users_rooms
 import socketio
 from utils.error_message import ErrorMessage
 
@@ -21,14 +18,14 @@ app = socketio.ASGIApp(sio, socketio_path="ws")
 async def send_message(
     sender_id: str, message: Message, token: Annotated[str, Depends(oauth2_scheme)]
 ):
-    return chat_controller.send_message(
+    return await chat_controller.send_message(
         sender_id=sender_id, message=message, token=token
     )
 
 
 @sio.event
 async def connect(sid, environ, auth):
-    token = environ["HTTP_AUTHORIZATION"].split(' ')[1]
+    token = environ.get("HTTP_ACCESS_TOKEN")
     if not validate_token(token=token):
         socket_exception_connection_refused(ErrorMessage.invalid_token)
     print("connect ", sid)
@@ -39,24 +36,10 @@ async def disconnect(sid):
     print("disconnect ", sid)
 
 
-@sio.on("chats")
+@sio.on("get_chats")
 async def chats(sid, data):
-    for chat_data in get_all_chats(data["id"]):
-        await sio.emit("users", chat_data)
-
-
-def get_all_chats(id: str):
-    db = MongoStore.mongo_db()
-    result = (
-        db[MongoCollections.chats]
-        .find({"owner": id})
-        .sort("last_message.timestamp", pymongo.ASCENDING)
-    )
-
-    for chat in result:
-        chat_dict = Chat(**chat).dict()
-        chat_dict["last_message"]["timestamp"] = chat_dict["last_message"][
-            "timestamp"
-        ].strftime("%Y-%m-%dT%H:%M:%S")
-
-        yield chat_dict
+    user_id = data.get("id")
+    users_rooms.rooms[user_id] = [sid, sio]
+    # for chat_data in chat_controller.get_all_chats(user_id):
+    chat_data = chat_controller.get_all_chats(user_id)
+    await chat_controller.send_chat_data(sio, chat_data=chat_data, sid=sid)
