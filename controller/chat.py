@@ -1,6 +1,7 @@
 import pymongo
 from controller.mongo_db import MongoCollections, MongoStore
 from models.chat import Chat
+from view.socket import sio
 
 
 def get_all_chats(id: str):
@@ -21,7 +22,7 @@ def get_all_chats(id: str):
     return chats
 
 
-async def send_chat_data(sio, chat_data: dict, sid: str):
+async def send_chat_data(chat_data: dict, sid: str):
     await sio.emit("chats", chat_data, room=sid)
 
 

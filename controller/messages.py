@@ -10,6 +10,7 @@ from models.chat import Chat
 from models.message import Message
 from models.room import Room
 from controller import users_rooms
+from view.socket import sio
 
 
 def order_strings_ascending_in_place(strings):
@@ -50,34 +51,31 @@ async def send_message(sender_id: str, message: Message):
     )
     db[MongoCollections.rooms].insert_one(room.dict())
 
-    sender_socket = users_rooms.rooms.get(sender_id)
-    receiver_socket = users_rooms.rooms.get(message.receiver_id)
-    room_socket = users_rooms.rooms.get(key)
+    sender_sid = users_rooms.rooms.get(sender_id)
+    receiver_sid = users_rooms.rooms.get(message.receiver_id)
 
     asyncio.gather(
-        send_chat_if_exists(sender_id, sender_socket),
-        send_chat_if_exists(message.receiver_id, receiver_socket),
-        send_message_if_exists(key, room_socket),
+        send_chat_if_exists(sender_id, sender_sid),
+        send_chat_if_exists(message.receiver_id, receiver_sid),
+        send_message_if_exists(key),
     )
 
     return room
 
 
-async def send_chat_if_exists(id, socket):
-    if socket:
+async def send_chat_if_exists(id, sid):
+    if sid:
         try:
             chat_data = get_all_chats(id)
-            await send_chat_data(socket[1], chat_data=chat_data, sid=socket[0])
+            await send_chat_data(chat_data=chat_data, sid=sid)
         except ():
             pass
 
 
-async def send_message_if_exists(id, socket):
-    if socket:
+async def send_message_if_exists(id):
         try:
-            print("Room id in send message if exist " , id)
             user_messages = get_all_messages(room_id=id)
-            await send_messages_data(socket[1], message=user_messages, sid=id)
+            await send_messages_data(messages=user_messages, room=id)
         except ():
             pass
 
@@ -104,6 +102,6 @@ def message_datetime_to_json(dict) -> dict:
     return dict["message"]["timestamp"].strftime("%Y-%m-%dT%H:%M:%S")
 
 
-async def send_messages_data(sio, messages: dict, sid: str):
-    await sio.emit("messages", messages, room=sid)
+async def send_messages_data(messages: dict, room: str):
+    await sio.emit("messages", messages, to=room)
 
