@@ -28,8 +28,6 @@ async def get_messages(sid, data):
     room_id = messages.generate_consistent_key(participants)
 
     await sio.enter_room(sid, room_id)
-    print("Room id in get messages " , room_id)
-    print(room_id)
 
     user_messages = messages.get_all_messages(room_id=room_id)
     await messages.send_messages_data(messages=user_messages, room=room_id)
