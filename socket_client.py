@@ -14,8 +14,13 @@ async def connect():
 
 
 @sio.on("chats")
-async def handle_users_event(data):
-    print("Received users event:", data)
+async def handle_users_chats(data):
+    print("Received users chats:", data)
+
+
+@sio.on("messages")
+async def handle_user_messages(data):
+    print("Received users messages:", data[0])
 
 
 @sio.event
@@ -26,6 +31,13 @@ async def disconnect():
 async def main():
     await sio.connect(url="http://127.0.0.1:8000", socketio_path="ws", headers=headers)
     await sio.emit("get_chats", {"id": "652426912b3e343a0af72bf2"})
+    await sio.emit(
+        "get_messages",
+        {
+            "sender_id": "6536b0ab2fa848aa7d4a155c",
+            "receiver_id": "652426912b3e343a0af72bf2",
+        },
+    )
     await sio.wait()
     await sio.disconnect()
 
